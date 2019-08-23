@@ -24,7 +24,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(passport.initialize());
 
-// app.use('/api',require('./src/user/'))
+app.use('/',(req,res) => {
+    res.send('home');
+});
+app.use('/api',require('./src/api'));
 // require('./api/index')(app, passport);
 
 app.listen(port, err => {
