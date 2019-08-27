@@ -1,10 +1,9 @@
-const express = require('express');
-const auth = express.Router();
+const router = require('express').Router();
 const authCtrl = require('./auth.controller');
 
-auth.post('/register/local', authCtrl.localRegister);
-auth.post('/login/local', authCtrl.localLogin);
-auth.get('/exists/:key(email|username)/:value', authCtrl.exists);
-auth.post('/logout', authCtrl.logout);
+router.post('/register/local', authCtrl.localRegister);
+router.post('/login/local', authCtrl.localLogin);
+router.get('/exists/:key(email|username)/:value', authCtrl.exists);
+router.post('/logout', authCtrl.logout);
 
-module.exports = auth;
+module.exports = router;

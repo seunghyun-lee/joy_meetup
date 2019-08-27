@@ -1,9 +1,42 @@
-const Joi = require('joi');
+// const jwt = require('jsonwebtoken');
+// const Joi = require('joi');
+const LocalStrategy = require('passport-local').Strategy;
 const User = require('../../models/user');
 
-// register user
-exports.localRegister = async(ctx) => {
-    ctx.body = 'register';
+/*
+    POST /api/auth/register
+    {
+        username,
+        email,
+        password
+    }
+*/
+
+exports.localRegister = (req, res, done) => {
+ 
+    var { username, email, password } = req.body;
+    console.log(username);
+    process.nextTick(function(){
+        User.findOne({'local.username':username}, function(err, user) {
+            if(err) {
+                return done(err);
+            }
+            if(user){                
+                return done(null,false,req.flash('signupMessage','that email already taken'));
+            } else {
+                var newUser = new User();
+                newUser.local.username = username;
+                newUser.local.email = email;
+                newUser.local.password = newUser.generateHash(password);
+                console.log(newUser);
+                newUser.save(function(err){
+                    if(err)
+                        throw err;
+                    return done(null, newUser);
+                })
+            }
+        })
+    })
 };
 
 // local login

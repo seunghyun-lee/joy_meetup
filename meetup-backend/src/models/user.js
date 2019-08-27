@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 const config = require('../config/config');
 
 function hash(password) {
@@ -7,28 +8,37 @@ function hash(password) {
 }
 
 const userSchema = mongoose.Schema({
-    profile: {
+    local: {
         username: String,
-        thumbnail: { type: String, default: '' }
+        email: String,
+        password: String
     },
-    email: { type: String },
-    social: {
-        facebook: {
-            id: String,
-            accessToken: String
-        },
-        google: {
-            id: String,
-            accessToken: String
-        },
+    facebook: {
+        id: String,
+        token: String,
+        email: String,
+        username: String
     },
-    password: String,
-    thoughtCount: { type: Number, default: 0 },
-    createAt: { type: Date, default: Date.now }
+    google: {
+        id: String,
+        token: String,
+        email: String,
+        username: String
+    },
 });
 
+userSchema.methods.generateHash = function(password) {
+    return bcrypt.hashSync(password, bcrypt.genSaltSync(9));
+}
+
+userSchema.methods.validPassword =function(password) {
+    return bcrypt.compareSync(password, this.local.password);
+}
+
+// from this move to another file.
+
 userSchema.statics.findByUsername = function(username) {
-    return this.findOne({'profile.username': username}).exec();
+    return this.findOne({username}).exec();
 };
 
 userSchema.statics.findByEmail = function(email) {
@@ -38,7 +48,7 @@ userSchema.statics.findByEmail = function(email) {
 userSchema.statics.findByEmailOrUsername = function({username, email}) {
     return this.findOne({
         $or: [
-            { 'profile.username': username },
+            { username },
             { email }
         ]
     }).exec();
@@ -47,13 +57,11 @@ userSchema.statics.findByEmailOrUsername = function({username, email}) {
 userSchema.statics.localRegister = function({ username, email, password }) {
     // when you're creating new account, heve to use 'new this'
     const account = new this({
-        profile: {
-            username
-            // thumbnail is default
-        },
+        username,
         email,
-        password: hash(password)
+        password
     });
+
     return account.save();
 };
 
@@ -61,26 +69,5 @@ userSchema.methods.validatePassword = function(password) {
     const hashed = hash(password);
     return this.password === hashed;
 };
-
-//  create new user document
-userSchema.statics.create = function(username, password) {
-    const encrypted = bcrypt.hashSync(password, bcrypt.genSaltSync(9));
-
-    const user = new this({
-        username,
-        password: encrypted
-    });
-    // return the Promise
-    return user.save();
-}
-
-//  find one user by using username
-userSchema.statics.findOneByUsername = function(username) {
-    return this.local.findone({
-        username
-    });    
-}
-
-// 
 
 module.exports = mongoose.model('User', userSchema);
