@@ -4,7 +4,7 @@
   "description": "meetup backend service",
   "main": "index.js",
   "scripts": {
-    "dev": "NODE_ENV=development nodemon src/index.js"
+    "dev": "NODE_ENV=development nodemon src/server.js"
   },
   "repository": "localhost",
   "author": "seunghyun",
